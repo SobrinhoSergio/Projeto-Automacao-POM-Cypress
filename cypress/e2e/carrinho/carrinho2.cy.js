@@ -1,7 +1,7 @@
 /// <reference types="Cypress"/>
 
-import ProductsPage from "../../../pages/ProductsPage"
-import CartPage from "../../../pages/CartPage"
+import ProductsPage from "../../pages/ProductsPage"
+import CartPage from "../../pages/CartPage"
 
 describe("E2E - Carrinho", () => {
 

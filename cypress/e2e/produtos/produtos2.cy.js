@@ -1,6 +1,6 @@
 /// <reference types="Cypress"/>
 
-import ProductsPage from "../../../pages/ProductsPage"
+import ProductsPage from "../../pages/ProductsPage"
 
 describe('E2E - Ordenação de produtos', () => {
 
