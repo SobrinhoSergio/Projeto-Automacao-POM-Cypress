@@ -28,10 +28,15 @@ Cypress.Commands.add('createProduct', (token) => {
     return cy.request({
         method: 'POST',
         url: 'http://localhost:3000/produtos',
-        headers: {
-            authorization: token
-        },
+        headers: { authorization: token },
         body: produto
+    }).then((response)=>{
+
+        return {
+            response,
+            produto
+        }
+
     })
 
 })

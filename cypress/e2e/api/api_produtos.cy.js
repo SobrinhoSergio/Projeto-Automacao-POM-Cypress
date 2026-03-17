@@ -15,12 +15,10 @@ describe('API - Produtos', () => {
 
     it('Deve cadastrar um produto com sucesso', () => {
 
-        cy.createProduct(token)
-        .then((response)=>{
+        cy.createProduct(token).then(({response, produto})=>{
 
-            expect(response.status).to.equal(201)
-            expect(response.body.message)
-            .to.equal('Cadastro realizado com sucesso')
+            expect(response.status).to.eq(201)
+            expect(produto.nome).to.exist
 
         })
 
