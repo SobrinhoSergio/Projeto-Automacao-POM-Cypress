@@ -1,68 +1,82 @@
 /// <reference types="Cypress"/>
 
+import ProductsPage from "../../pages/ProductsPage"
+
 describe('E2E - Ordenação de produtos', () => {
 
-    beforeEach(() => {
-        cy.login('standard_user','secret_sauce')
-        cy.get('[data-test="title"]').should('contain', 'Products')
-    });
+  let dados
 
-    it('Ordenar produtos por ordem alfabética (A → Z)', () => {
-        cy.get('[data-test="product-sort-container"]').select('Name (A to Z)')
+  before(() => {
 
-        cy.get(':nth-child(1)').should('contain', 'Sauce Labs Backpack')
-        cy.get(':nth-child(2)').should('contain', 'Sauce Labs Bike Light')
-        cy.get(':nth-child(3)').should('contain', 'Sauce Labs Bolt T-Shirt')
-    });
+    cy.fixture('produtos').then((data) => {
+      dados = data
+    })
 
-    it('Ordenar produtos por ordem alfabética inversa (Z → A)', () => {
-        cy.get('[data-test="product-sort-container"]').select('Name (Z to A)')
+  })
 
-        cy.get(':nth-child(1)').should('contain', 'Test.allTheThings() T-Shirt (Red)')
-        cy.get(':nth-child(2)').should('contain', 'Sauce Labs Onesie')
-        cy.get(':nth-child(3)').should('contain', 'Sauce Labs Fleece Jacket')
-    });
+  beforeEach(() => {
 
-      it('Ordernar produtos por crescente de preço', () => {
+    cy.login('standard_user','secret_sauce')
 
-        cy.get('[data-test="product-sort-container"]').select('Price (low to high)')
+    cy.get('[data-test="title"]')
+      .should('contain', 'Products')
 
-        cy.get('.inventory_item_description').eq(0).within(() => {
-            cy.get('.inventory_item_name').should('contain', 'Sauce Labs Onesie')
-            cy.get('.inventory_item_price').should('contain', '$7.99') 
-        })
+  })
 
-        cy.get('.inventory_item_description').eq(1).within(() => {
-            cy.get('.inventory_item_name').should('contain', 'Sauce Labs Bike Light')
-            cy.get('.inventory_item_price').should('contain', '$9.99')
-        })
+  it('Ordenar produtos por ordem alfabética (A → Z)', () => {
 
-        cy.get('.inventory_item_description').eq(2).within(() => {
-            cy.get('.inventory_item_name').should('contain', 'Sauce Labs Bolt T-Shirt')
-            cy.get('.inventory_item_price').should('contain', '$15.99')
-        })
+    ProductsPage.ordenar('Name (A to Z)')
 
-    });
+    dados.az.forEach((produto, index) => {
 
-    it('Ordernar produtos por decrescente de preço', () => {
+      ProductsPage.validarProduto(index, produto)
 
-        cy.get('[data-test="product-sort-container"]').select('Price (high to low)')
+    })
 
-        cy.get('.inventory_item_description').eq(0).within(() => {
-            cy.get('.inventory_item_name').should('contain', 'Sauce Labs Fleece Jacket')
-            cy.get('.inventory_item_price').should('contain', '$49.99')
-        })
+  })
 
-        cy.get('.inventory_item_description').eq(1).within(() => {
-            cy.get('.inventory_item_name').should('contain', 'Sauce Labs Backpack')
-            cy.get('.inventory_item_price').should('contain', '$29.99')
-        })
+  it('Ordenar produtos por ordem alfabética inversa (Z → A)', () => {
 
-        cy.get('.inventory_item_description').eq(2).within(() => {
-            cy.get('.inventory_item_name').should('contain', 'Sauce Labs Bolt T-Shirt')
-            cy.get('.inventory_item_price').should('contain', '$15.99')
-        })
+    ProductsPage.ordenar('Name (Z to A)')
 
-    });
+    dados.za.forEach((produto, index) => {
 
-});
+      ProductsPage.validarProduto(index, produto)
+
+    })
+
+  })
+
+  it('Ordenar produtos por preço crescente', () => {
+
+    ProductsPage.ordenar('Price (low to high)')
+
+    dados.lowPriceProducts.forEach((produto, index) => {
+
+      ProductsPage.validarProdutoComPreco(
+        index,
+        produto.name,
+        produto.price
+      )
+
+    })
+
+  })
+
+  it('Ordenar produtos por preço decrescente', () => {
+
+    ProductsPage.ordenar('Price (high to low)')
+
+    dados.highPriceProducts.forEach((produto, index) => {
+
+      ProductsPage.validarProdutoComPreco(
+        index,
+        produto.name,
+        produto.price
+      )
+
+    })
+
+  })
+
+})

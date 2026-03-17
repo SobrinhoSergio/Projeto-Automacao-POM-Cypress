@@ -1,76 +1,88 @@
 /// <reference types="Cypress"/>
 
+import ProductsPage from "../../pages/ProductsPage"
+import CartPage from "../../pages/CartPage"
+import CheckoutPage from "../../pages/CheckoutPage"
+
 describe('E2E - Checkout', () => {
 
-    beforeEach(() => {
-        cy.login('standard_user','secret_sauce')
-        cy.get('[data-test="title"]').should('contain', 'Products')
-    });
+  beforeEach(() => {
 
-    it('Deve finalizar compra com sucesso', () => {
+    cy.login('standard_user','secret_sauce')
 
-        cy.adicionarProduto('Sauce Labs Onesie')
+    cy.get('[data-test="title"]')
+      .should('contain', 'Products')
 
-        cy.get('.shopping_cart_link').click()
+  })
 
-        cy.get('[data-test="checkout"]').click()
+  it('Deve finalizar compra com sucesso', () => {
 
-        cy.get('[data-test="firstName"]').type('Sérgio')
-        cy.get('[data-test="lastName"]').type('Sobrinho')
-        cy.get('[data-test="postalCode"]').type('58411005')
+    ProductsPage.adicionarProduto('Sauce Labs Onesie')
 
-        cy.get('[data-test="continue"]').click()
+    ProductsPage.abrirCarrinho()
 
-        cy.get('.summary_total_label')
-          .should('contain','8.63')
+    CartPage.clicarCheckout()
 
-        cy.get('[data-test="finish"]').click()
+    CheckoutPage.preencherDados(
+      'Sérgio',
+      'Sobrinho',
+      '58411005'
+    )
 
-        cy.get('.complete-header')
-          .should('have.text','Thank you for your order!')
-    });
+    CheckoutPage.continuar()
 
-    it('Deve validar se o cálculo do total está correto', () => {
+    cy.get('.summary_total_label')
+      .should('contain','8.63')
 
-        cy.adicionarProduto('Sauce Labs Backpack')
-        cy.adicionarProduto('Sauce Labs Bike Light')
+    CheckoutPage.finalizar()
 
-        cy.get('.shopping_cart_link').click()
+    CheckoutPage.validarCompraSucesso()
 
-        cy.get('[data-test="checkout"]').click()
+  })
 
-        cy.get('[data-test="firstName"]').type('Sérgio')
-        cy.get('[data-test="lastName"]').type('Sobrinho')
-        cy.get('[data-test="postalCode"]').type('58411005')
+  it('Deve validar se o cálculo do total está correto', () => {
 
-        cy.get('[data-test="continue"]').click()
+    ProductsPage.adicionarProduto('Sauce Labs Backpack')
+    ProductsPage.adicionarProduto('Sauce Labs Bike Light')
 
-        let itemTotal
-        let tax
+    ProductsPage.abrirCarrinho()
 
-        cy.get('.summary_subtotal_label')
-        .invoke('text')
-        .then((text) => {
-            itemTotal = parseFloat(text.replace('Item total: $',''))
-        })
+    CartPage.clicarCheckout()
 
-        cy.get('.summary_tax_label')
-        .invoke('text')
-        .then((text) => {
-            tax = parseFloat(text.replace('Tax: $',''))
-        })
+    CheckoutPage.preencherDados(
+      'Sérgio',
+      'Sobrinho',
+      '58411005'
+    )
 
-        cy.get('.summary_total_label')
-        .invoke('text')
-        .then((text) => {
+    CheckoutPage.continuar()
 
-            const total = parseFloat(text.replace('Total: $',''))
-            const calculo = itemTotal + tax
+    let itemTotal
+    let tax
 
-            expect(total).to.eq(calculo)
+    cy.get('.summary_subtotal_label')
+      .invoke('text')
+      .then((text) => {
+        itemTotal = parseFloat(text.replace('Item total: $',''))
+      })
 
-        })
+    cy.get('.summary_tax_label')
+      .invoke('text')
+      .then((text) => {
+        tax = parseFloat(text.replace('Tax: $',''))
+      })
 
-    });
+    cy.get('.summary_total_label')
+      .invoke('text')
+      .then((text) => {
 
-});
+        const total = parseFloat(text.replace('Total: $',''))
+        const calculo = itemTotal + tax
+
+        expect(total).to.eq(calculo)
+
+      })
+
+  })
+
+})

@@ -1,6 +1,6 @@
 /// <reference types="Cypress"/>
 
-import LoginPage from "../../../pages/LoginPage.js"
+import LoginPage from "../../pages/LoginPage.js"
 
 describe('Login - SauceDemo', () => {
 

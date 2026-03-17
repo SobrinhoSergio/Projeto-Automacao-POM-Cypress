@@ -1,101 +1,98 @@
 /// <reference types="Cypress"/>
 
-describe('E2E - Carrinho', () => {
+import ProductsPage from "../../pages/ProductsPage"
+import CartPage from "../../pages/CartPage"
+
+describe("E2E - Carrinho", () => {
+
+  let produtos
+
+  before(() => {
+
+    cy.fixture("produtos")
+      .then((data) => {
+        produtos = data
+      })
+
+  })
 
   beforeEach(() => {
-    cy.login('standard_user', 'secret_sauce')
-    cy.get('[data-test="title"]').should('contain', 'Products')
+
+    cy.login("standard_user", "secret_sauce")
+
+    cy.get('[data-test="title"]')
+      .should("contain", "Products")
+
   })
 
-  it('Deve adicionar produtos ao carrinho e validar ordem crescente de preço', () => {
+  it("Deve adicionar produtos e validar ordem crescente de preço", () => {
 
-    cy.get('[data-test="product-sort-container"]').select('Price (low to high)')
+    ProductsPage.ordenar("Price (low to high)")
 
-    cy.adicionarProduto('Sauce Labs Onesie')
-    cy.adicionarProduto('Sauce Labs Bike Light')
-    cy.adicionarProduto('Sauce Labs Bolt T-Shirt')
-
-    cy.get('.shopping_cart_link').click()
-    cy.get('.shopping_cart_link').should('have.text', '3')
-
-    cy.get('.cart_item').eq(0).within(() => {
-      cy.get('.inventory_item_name').should('contain', 'Sauce Labs Onesie')
-      cy.get('.inventory_item_price').should('contain', '$7.99')
+    produtos.lowPriceProducts.forEach((produto) => {
+      ProductsPage.adicionarProduto(produto.name)
     })
 
-    cy.get('.cart_item').eq(1).within(() => {
-      cy.get('.inventory_item_name').should('contain', 'Sauce Labs Bike Light')
-      cy.get('.inventory_item_price').should('contain', '$9.99')
-    })
+    ProductsPage.abrirCarrinho()
 
-    cy.get('.cart_item').eq(2).within(() => {
-      cy.get('.inventory_item_name').should('contain', 'Sauce Labs Bolt T-Shirt')
-      cy.get('.inventory_item_price').should('contain', '$15.99')
+    CartPage.validarQuantidade(3)
+
+    produtos.lowPriceProducts.forEach((produto, index) => {
+      CartPage.validarProduto(index, produto.name, produto.price)
     })
 
   })
 
-  it('Deve adicionar produtos e validar ordem decrescente de preço no carrinho', () => {
+  it("Deve adicionar produtos e validar ordem decrescente de preço", () => {
 
-    cy.get('[data-test="product-sort-container"]').select('Price (high to low)')
+    ProductsPage.ordenar("Price (high to low)")
 
-    cy.adicionarProduto('Sauce Labs Fleece Jacket')
-    cy.adicionarProduto('Sauce Labs Backpack')
-    cy.adicionarProduto('Sauce Labs Bolt T-Shirt')
-
-    cy.get('.shopping_cart_link').click()
-    cy.get('.inventory_item_name').should('have.length', 3)
-
-    cy.get('.cart_item').eq(0).within(() => {
-      cy.get('.inventory_item_name').should('contain', 'Sauce Labs Fleece Jacket')
-      cy.get('.inventory_item_price').should('contain', '$49.99')
+    produtos.highPriceProducts.forEach((produto) => {
+      ProductsPage.adicionarProduto(produto.name)
     })
 
-    cy.get('.cart_item').eq(1).within(() => {
-      cy.get('.inventory_item_name').should('contain', 'Sauce Labs Backpack')
-      cy.get('.inventory_item_price').should('contain', '$29.99')
-    })
+    ProductsPage.abrirCarrinho()
 
-    cy.get('.cart_item').eq(2).within(() => {
-      cy.get('.inventory_item_name').should('contain', 'Sauce Labs Bolt T-Shirt')
-      cy.get('.inventory_item_price').should('contain', '$15.99')
+    CartPage.validarQuantidade(3)
+
+    produtos.highPriceProducts.forEach((produto, index) => {
+      CartPage.validarProduto(index, produto.name, produto.price)
     })
 
   })
 
-  it('Deve remover um produto do carrinho', () => {
+  it("Deve remover produto do carrinho", () => {
 
-    cy.adicionarProduto('Sauce Labs Onesie')
-    cy.adicionarProduto('Sauce Labs Bike Light')
-    cy.adicionarProduto('Sauce Labs Bolt T-Shirt')
+    produtos.lowPriceProducts.forEach((produto) => {
+      ProductsPage.adicionarProduto(produto.name)
+    })
 
-    cy.get('.shopping_cart_link').click()
-    cy.get('.cart_item').should('have.length', 3)
+    ProductsPage.abrirCarrinho()
 
-    cy.get('[data-test="remove-sauce-labs-onesie"]').click()
+    CartPage.validarQuantidade(3)
 
-    cy.get('.cart_item').should('have.length', 2)
+    CartPage.removerProduto("Sauce Labs Onesie")
 
-    cy.contains('.inventory_item_name', 'Sauce Labs Onesie').should('not.exist')
-    cy.contains('.inventory_item_name', 'Sauce Labs Bike Light').should('exist')
-    cy.contains('.inventory_item_name', 'Sauce Labs Bolt T-Shirt').should('exist')
+    CartPage.validarQuantidade(2)
+
+    cy.contains(".inventory_item_name", "Sauce Labs Onesie")
+      .should("not.exist")
 
   })
 
   it('Deve adicionar e remover o mesmo produto do carrinho', () => {
 
-    cy.adicionarProduto('Sauce Labs Onesie')
+    ProductsPage.adicionarProduto('Sauce Labs Onesie')
 
-    cy.get('.shopping_cart_badge').should('have.text', '1')
+    ProductsPage.validarQuantidadeCarrinho('1')
 
-    cy.get('.shopping_cart_link').click()
+    ProductsPage.abrirCarrinho()
 
-    cy.contains('.inventory_item_name', 'Sauce Labs Onesie').should('exist')
+    CartPage.validarProdutoNoCarrinho('Sauce Labs Onesie')
 
-    cy.get('[data-test="remove-sauce-labs-onesie"]').click()
+    CartPage.removerProduto('Sauce Labs Onesie')
 
-    cy.get('.cart_item').should('not.exist')
-    cy.contains('.inventory_item_name', 'Sauce Labs Onesie').should('not.exist')
+    CartPage.validarCarrinhoVazio()
 
   })
 
